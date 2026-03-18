@@ -17,7 +17,7 @@ st.markdown(f"""
     
     /* 1. Reset ALL buttons to Light Blue #80bfff first */
     div.stButton > button {{
-        background-color: {btn_color} !important;
+        background-color: {#003366} !important;
         color: black !important;
         border-radius: 10px;
         border: 2px solid #000000;
