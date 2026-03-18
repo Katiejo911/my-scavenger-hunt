@@ -4,14 +4,14 @@ import streamlit.components.v1 as components
 # --- CONFIGURATION & THEME ---
 st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
-# Custom CSS: Background is now BLUE, Buttons are CYAN
+# Custom CSS: Background is DARK BLUE, Buttons are CYAN
 st.markdown(f"""
     <style>
     .stApp {{
-        background-color: #0FD3FA;
+        background-color: #003366;
     }}
     div.stButton > button {{
-        background-color: #FFFFFF !important;
+        background-color: #00FFFF !important;
         color: black !important;
         border-radius: 10px;
         border: 2px solid #000000;
@@ -19,6 +19,10 @@ st.markdown(f"""
     }}
     .stTextInput>div>div>input {{
         background-color: white;
+    }}
+    /* White text for visibility on dark blue */
+    h1, h2, h3, p, span, label {{
+        color: white !important;
     }}
     </style>
     """, unsafe_allow_html=True)
