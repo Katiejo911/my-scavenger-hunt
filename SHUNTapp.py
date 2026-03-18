@@ -5,8 +5,8 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
 # THE COLOR PALETTE
-bg_color = "#003366"  # Dark Blue
-btn_color = "#80bfff" # Light Blue
+bg_color = "#003366"  
+btn_color = "#003366" 
 
 # Custom CSS
 st.markdown(f"""
@@ -15,18 +15,17 @@ st.markdown(f"""
         background-color: {bg_color};
     }}
     
-    /* 1. Reset ALL buttons to Light Blue #80bfff first */
+    /* 1. All buttons match the background color */
     div.stButton > button {{
-        background-color: {#003366} !important;
-        color: black !important;
+        background-color: {bg_color} !important;
+        color: white !important;
         border-radius: 10px;
-        border: 2px solid #000000;
+        border: 1px solid #80bfff;
         font-weight: bold;
         width: 100%;
     }}
 
-    /* 2. THE STEALTH FIX: Force the first button (the flag) to be GHOSTED */
-    /* We target the specific container for the flag button */
+    /* 2. THE STEALTH PIRATE FIX */
     [data-testid="column"]:nth-of-type(2) [data-testid="stButton"] button {{
         background-color: transparent !important;
         border: none !important;
@@ -34,7 +33,6 @@ st.markdown(f"""
         box-shadow: none !important;
     }}
     
-    /* Only show the flag when you hover over the secret spot */
     [data-testid="column"]:nth-of-type(2) [data-testid="stButton"] button:hover {{
         color: white !important;
     }}
@@ -62,8 +60,7 @@ if 'admin_authenticated' not in st.session_state:
 if 'hint_revealed' not in st.session_state:
     st.session_state.hint_revealed = False
 
-# --- TOP NAVIGATION (The Secret Door) ---
-# We use three columns to put the "Invisible" button in the center
+# --- TOP NAVIGATION ---
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button("🏴‍☠️"):
@@ -73,13 +70,11 @@ with col2:
 # --- PLAYER PAGE ---
 if st.session_state.page == "Player":
     st.title("Scavenger Hunt")
-
     if not st.session_state.targets:
         st.info("No missions yet. Find the secret spot at the top to log in.")
     elif st.session_state.level < len(st.session_state.targets):
         t = st.session_state.targets[st.session_state.level]
         st.subheader("📍 1. Find the Destination")
-        
         if t['type'] == "GPS Coordinates":
             parts = t['destination'].split('|')
             loc_name, lat, lon = parts[0], parts[1], parts[2]
@@ -90,30 +85,16 @@ if st.session_state.page == "Player":
             st.write(f"**Go to:** {t['destination']}")
         
         st.markdown("---")
-        st.subheader("🔍 2. Search Clue")
-        if not st.session_state.hint_revealed:
-            if st.button("💡 Need a hint?"):
-                st.session_state.hint_revealed = True
-                st.rerun()
-        else:
-            st.success(f"Hint: {t['orientation']}")
-
-        st.markdown("---")
         ans = st.text_input("Enter secret word:", key=f"p_{st.session_state.level}")
         if st.button("Verify"):
             if ans.lower().strip() == t['completion'].lower().strip():
                 st.balloons()
                 st.session_state.level += 1
-                st.session_state.hint_revealed = False
                 st.rerun()
             else:
                 st.error("Try again!")
     else:
         st.header("🏆 Victory!")
-        if st.button("Restart Hunt"):
-            st.session_state.level = 0
-            st.session_state.hint_revealed = False
-            st.rerun()
 
 # --- ADMIN PAGE ---
 else:
@@ -124,8 +105,6 @@ else:
             if pw == "moravia2026":
                 st.session_state.admin_authenticated = True
                 st.rerun()
-            else:
-                st.error("Wrong password")
     else:
         st.title("🛠 Admin Dashboard")
         if st.button("Log Out"):
@@ -134,31 +113,24 @@ else:
             st.rerun()
 
         st.subheader("Add New Mission")
-        # GPS is now the first/default choice
-        m_type = st.selectbox("Mission Type", ["GPS Coordinates", "Text Hint", "Image URL"])
+        m_type = st.selectbox("Mission Type", ["GPS Coordinates", "Text Hint"])
         
         if m_type == "GPS Coordinates":
-            loc_name = st.text_input("Location Name (e.g. Powers Library)")
+            loc_name = st.text_input("Location Name")
             lat_val = st.text_input("Latitude")
             lon_val = st.text_input("Longitude")
             dest = f"{loc_name}|{lat_val}|{lon_val}"
         else:
-            dest = st.text_input("Destination Name/URL")
+            dest = st.text_input("Destination")
 
         hint = st.text_input("Search Clue (Hint)")
         sol = st.text_input("Completion Word (Answer)")
 
         if st.button("Add Mission"):
-            if dest and hint and sol:
-                st.session_state.targets.append({"type": m_type, "destination": dest, "orientation": hint, "completion": sol})
-                st.success("Mission Added!")
-                st.rerun()
-            else:
-                st.error("Fill in all boxes!")
+            st.session_state.targets.append({"type": m_type, "destination": dest, "orientation": hint, "completion": sol})
+            st.success("Mission Added!")
+            st.rerun()
         
-        st.markdown("---")
-        st.subheader("Current Missions")
-        st.write(st.session_state.targets)
         if st.button("Clear All Missions"):
             st.session_state.targets = []
             st.rerun()
