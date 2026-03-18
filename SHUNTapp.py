@@ -127,4 +127,4 @@ else:
         if st.button("Unlock"):
             if pw == "moravia2026": 
                 st.session_state.admin_authenticated = True
-                st.rerun().
+                st.rerun()
