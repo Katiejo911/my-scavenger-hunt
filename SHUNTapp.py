@@ -6,7 +6,46 @@ st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
 # THE COLOR PALETTE
 bg_color = "#003366"  
-btn_border = "#4da6ff" # Softer blue for borders
+btn_border = "<style>
+/* 1. The Main Background */
+.stApp {
+    background-color: #003366;
+}
+
+/* 2. THE ISOLATED GHOST FIX */
+/* This targets the Pirate Flag button specifically by its icon */
+button:has(div:contains("🏴‍☠️")) {
+    background-color: transparent !important;
+    border: none !important;
+    color: #003366 !important; /* Matches background to hide it */
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* 3. Reveal the flag only when you hover over it */
+button:has(div:contains("🏴‍☠️")):hover {
+    color: white !important;
+    background-color: transparent !important;
+}
+
+/* 4. Standard Buttons: Keep them visible with a blue border */
+div.stButton > button:not(:has(div:contains("🏴‍☠️"))) {
+    background-color: #003366 !important;
+    color: white !important;
+    border: 1px solid #4da6ff !important;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* Text & Input styling */
+h1, h2, h3, p, span, label, .stMarkdown {
+    color: white !important;
+}
+.stTextInput>div>div>input {
+    background-color: white !important;
+    color: black !important;
+}
+</style>f" # Softer blue for borders
 
 # Custom CSS
 st.markdown(f"""
