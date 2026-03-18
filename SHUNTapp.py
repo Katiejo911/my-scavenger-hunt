@@ -29,7 +29,7 @@ st.markdown(f"""
         cursor: pointer;
     }}
     </style>
-    """, unsafe_content_code=True)
+    """, unsafe_allow_html=True)
 
 # --- SESSION STATE INITIALIZATION ---
 if 'level' not in st.session_state:
