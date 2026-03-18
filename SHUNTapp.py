@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # --- CONFIGURATION & THEME ---
 st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
-# Custom CSS: Dark Blue Background, Cyan Buttons, Invisible Pirate Flag
+# Custom CSS: Dark Blue Background,  #80bfff Buttons, Invisible Pirate Flag
 st.markdown(f"""
     <style>
     .stApp {{
