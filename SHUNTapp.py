@@ -118,14 +118,13 @@ if st.session_state.page == "Player":
             st.session_state.level = 0
             st.session_state.hint_revealed = False
             st.rerun()
-
 # --- ADMIN PAGE ---
-else:
+    else:
         if not st.session_state.admin_authenticated:
             st.title("🔒 Admin Login")
             pw = st.text_input("Enter Admin Password:", type="password")
             if st.button("Unlock"):
-                if pw == "moravia2026": 
+                if pw == "moravia2026":
                     st.session_state.admin_authenticated = True
                     st.rerun()
                 else:
@@ -139,14 +138,26 @@ else:
 
             st.subheader("Add New Mission")
             m_type = st.selectbox("Mission Type", ["Text Hint", "GPS Coordinates", "Image URL"])
-            dest = st.text_input("Destination (or Name|Lat|Lon)")
+            
+            # --- DYNAMIC BOXES BASED ON SELECTION ---
+            if m_type == "GPS Coordinates":
+                loc_name = st.text_input("Location Name (e.g. Powers Library)")
+                lat = st.text_input("Latitude")
+                lon = st.text_input("Longitude")
+                dest = f"{loc_name}|{lat}|{lon}"
+            else:
+                dest = st.text_input("Destination (Name or URL)")
+
             hint = st.text_input("Search Clue (Hint)")
             sol = st.text_input("Completion Word (Answer)")
 
             if st.button("Add Mission"):
-                new_target = {"type": m_type, "destination": dest, "orientation": hint, "completion": sol}
-                st.session_state.targets.append(new_target)
-                st.success("Mission Added!")
+                if dest and hint and sol:
+                    new_target = {"type": m_type, "destination": dest, "orientation": hint, "completion": sol}
+                    st.session_state.targets.append(new_target)
+                    st.success("Mission Added!")
+                else:
+                    st.error("Please fill in all boxes!")
                 
             st.markdown("---")
             st.subheader("Current Missions")
@@ -155,3 +166,6 @@ else:
             if st.button("Clear All Missions"):
                 st.session_state.targets = []
                 st.rerun()
+                
+
+            
