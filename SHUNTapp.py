@@ -120,8 +120,7 @@ if st.session_state.page == "Player":
             st.rerun()
 
 # --- ADMIN PAGE ---
-# --- ADMIN PAGE ---
-    else:
+else:
         if not st.session_state.admin_authenticated:
             st.title("🔒 Admin Login")
             pw = st.text_input("Enter Admin Password:", type="password")
