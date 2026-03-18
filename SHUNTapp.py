@@ -10,12 +10,21 @@ st.markdown(f"""
     .stApp {{
         background-color: #003366;
     }}
+    /* Standard Buttons are CYAN */
     div.stButton > button {{
         background-color: #00FFFF !important;
         color: black !important;
         border-radius: 10px;
         border: 2px solid #000000;
         font-weight: bold;
+    }}
+    /* SECRET PIRATE BUTTON: Matches background color exactly to hide it */
+    div.stButton > button:has(div:contains("🏴‍☠️")), 
+    div.stButton > button:contains("🏴‍☠️") {{
+        background-color: #003366 !important;
+        border: none !important;
+        color: #003366 !important; /* Makes the icon itself blend in too until hovered */
+        box-shadow: none !important;
     }}
     .stTextInput>div>div>input {{
         background-color: white;
@@ -42,6 +51,7 @@ if 'hint_revealed' not in st.session_state:
 # --- TOP NAVIGATION ICON ---
 cols = st.columns([1, 1, 1])
 with cols[1]:
+    # This is the "Invisible" button
     if st.button("🏴‍☠️"):
         st.session_state.page = "Admin" if st.session_state.page == "Player" else "Player"
         st.rerun()
@@ -91,53 +101,4 @@ if st.session_state.page == "Player":
         st.header("🏆 Victory!")
         if st.button("Restart Hunt"):
             st.session_state.level = 0
-            st.session_state.hint_revealed = False
-            st.rerun()
-
-# --- ADMIN PAGE ---
-else:
-    if not st.session_state.admin_authenticated:
-        st.title("🔒 Admin Login")
-        pw = st.text_input("Enter Admin Password:", type="password")
-        if st.button("Unlock"):
-            if pw == "moravia2026":
-                st.session_state.admin_authenticated = True
-                st.rerun()
-            else:
-                st.error("Wrong password")
-    else:
-        st.title("🛠 Admin Dashboard")
-        if st.button("Log Out"):
-            st.session_state.admin_authenticated = False
-            st.session_state.page = "Player"
-            st.rerun()
-
-        st.subheader("Add New Mission")
-        m_type = st.selectbox("Mission Type", ["Text Hint", "GPS Coordinates", "Image URL"])
-        
-        if m_type == "GPS Coordinates":
-            loc_name = st.text_input("Location Name")
-            lat_val = st.text_input("Latitude")
-            lon_val = st.text_input("Longitude")
-            dest = f"{loc_name}|{lat_val}|{lon_val}"
-        else:
-            dest = st.text_input("Destination Name/URL")
-
-        hint = st.text_input("Search Clue (Hint)")
-        sol = st.text_input("Completion Word (Answer)")
-
-        if st.button("Add Mission"):
-            if dest and hint and sol:
-                new_target = {"type": m_type, "destination": dest, "orientation": hint, "completion": sol}
-                st.session_state.targets.append(new_target)
-                st.success("Mission Added!")
-            else:
-                st.error("Fill in all boxes!")
-        
-        st.markdown("---")
-        st.subheader("Current Missions")
-        st.write(st.session_state.targets)
-        
-        if st.button("Clear All Missions"):
-            st.session_state.targets = []
-            st.rerun()
+            st.session
