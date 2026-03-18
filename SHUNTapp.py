@@ -21,7 +21,7 @@ st.markdown(f"""
     /* SECRET PIRATE BUTTON: Fully blends with background */
     div.stButton > button:has(div:contains("🏴‍☠️")), 
     div.stButton > button:contains("🏴‍☠️") {{
-        background-color: #003366 !important;
+        background-color: #80bfff !important;
         border: none !important;
         color: #003366 !important;
         box-shadow: none !important;
