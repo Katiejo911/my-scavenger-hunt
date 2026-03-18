@@ -119,6 +119,7 @@ if st.session_state.page == "Player":
             st.session_state.hint_revealed = False
             st.rerun()
 # --- ADMIN PAGE ---
+# --- ADMIN PAGE ---
     else:
         if not st.session_state.admin_authenticated:
             st.title("🔒 Admin Login")
@@ -164,6 +165,12 @@ if st.session_state.page == "Player":
             st.write(st.session_state.targets)
             
             if st.button("Clear All Missions"):
+                st.session_state.targets = []
+                st.rerun()
+                
+              
+              
+               
                 st.session_state.targets = []
                 st.rerun()
                 
