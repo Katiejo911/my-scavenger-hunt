@@ -1,95 +1,77 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# MUST BE THE FIRST ST LINE: Sets the browser tab and phone home-screen icon
-st.set_page_config(page_title="Scavenger Hunt", page_icon="🏴‍☠️")
+# --- CONFIGURATION & THEME ---
+st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
-# 1. Styling - Blue Background (#0077be), Cyan Buttons (#0FD3FA)
+# Custom CSS for colors and layout
 st.markdown(f"""
     <style>
-    .stApp {{ background-color: #0077be; }} 
-    
-    /* Global lettering is White */
-    h1, h2, h3, p, span, label, .stMarkdown {{ 
-        color: white !important; 
-        text-align: center; 
+    .stApp {{
+        background-color: #FBB832;
     }}
-    
-    /* Standard Buttons (Cyan) */
-    div.stButton > button {{ 
-        background-color: #0FD3FA; 
-        color: black; 
-        border-radius: 10px; 
-        font-weight: bold; 
-        width: 100%; 
-        border: none !important;
+    div.stButton > button {{
+        background-color: #0FD3FA !important;
+        color: black !important;
+        border-radius: 10px;
+        border: 2px solid #000000;
+        font-weight: bold;
     }}
-    
-    /* THE SECRET DOOR: Invisible override for the top button */
-    div[data-testid="column"]:nth-of-type(2) button {{
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: white !important;
-        font-size: 24px !important;
+    .stTextInput>div>div>input {{
+        background-color: white;
     }}
-    div[data-testid="column"]:nth-of-type(2) button:hover,
-    div[data-testid="column"]:nth-of-type(2) button:active,
-    div[data-testid="column"]:nth-of-type(2) button:focus {{
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
+    /* Top Center Icon */
+    .top-icon {{
+        display: flex;
+        justify-content: center;
+        font-size: 50px;
+        margin-top: -30px;
+        cursor: pointer;
     }}
-
-    /* Input Box Styling */
-    input, textarea {{ background-color: white !important; color: black !important; }}
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_content_code=True)
 
-# 2. Initialize Data (Session State)
-if 'targets' not in st.session_state: st.session_state.targets = []
-if 'level' not in st.session_state: st.session_state.level = 0
-if 'page' not in st.session_state: st.session_state.page = "Player"
-if 'hint_revealed' not in st.session_state: st.session_state.hint_revealed = False
-if 'admin_authenticated' not in st.session_state: st.session_state.admin_authenticated = False
+# --- SESSION STATE INITIALIZATION ---
+if 'level' not in st.session_state:
+    st.session_state.level = 0
+if 'targets' not in st.session_state:
+    st.session_state.targets = []
+if 'page' not in st.session_state:
+    st.session_state.page = "Player"
+if 'admin_authenticated' not in st.session_state:
+    st.session_state.admin_authenticated = False
+if 'hint_revealed' not in st.session_state:
+    st.session_state.hint_revealed = False
 
-# --- SECRET TOP BUTTON (The Gateway) ---
-col_l, col_m, col_r = st.columns([1,1,1])
-with col_m:
-    if st.button("🏴‍☠️", key="secret_gate"):
-        st.session_state.page = "Admin"
+# --- TOP NAVIGATION ICON ---
+cols = st.columns([1, 1, 1])
+with cols[1]:
+    if st.button("🏴‍☠️"):
+        st.session_state.page = "Admin" if st.session_state.page == "Player" else "Player"
         st.rerun()
 
-# --- PLAYER VIEW ---
+# --- PLAYER PAGE ---
 if st.session_state.page == "Player":
     st.title("Scavenger Hunt")
-    
+
     if not st.session_state.targets:
-        st.warning("No missions have been created yet.")
+        st.info("No missions have been created yet.")
     elif st.session_state.level < len(st.session_state.targets):
         t = st.session_state.targets[st.session_state.level]
         
-        # Mission Navigation
-        head_col, back_col = st.columns([3, 1])
-        head_col.header(f"Mission {st.session_state.level + 1}")
-        
-        if st.session_state.level > 0:
-            if back_col.button("🔙 BACK"):
-                st.session_state.level -= 1
-                st.session_state.hint_revealed = False
-                st.rerun()
-        
-        # 1. Destination
+        # 1. Destination Display
         st.subheader("📍 1. Find the Destination")
         if t['type'] == "GPS Coordinates":
             parts = t['destination'].split('|')
             loc_name, lat, lon = parts[0], parts[1], parts[2]
             st.info(f"Target: {loc_name}")
             map_html = f'<iframe width="100%" height="300" frameborder="0" src="https://maps.google.com/maps?q={lat},{lon}&hl=en&z=17&output=embed"></iframe>'
-            st.components.v1.html(map_html, height=310)
+            components.html(map_html, height=310)
         elif t['type'] == "Image URL":
-            if t['destination'].startswith("http"): st.image(t['destination'], use_column_width=True)
-        else:
-            st.info(t['destination'])
+            if t['destination'].startswith("http"):
+                st.image(t['destination'], use_column_width=True)
+            else:
+                st.info(t['destination'])
         
         # 2. Hint
         st.markdown("---")
@@ -100,7 +82,7 @@ if st.session_state.page == "Player":
                 st.rerun()
         else:
             st.success(f"Hint: {t['orientation']}")
-        
+
         # 3. Entry
         st.markdown("---")
         ans = st.text_input("Enter secret word:", key=f"p_{st.session_state.level}")
@@ -118,61 +100,52 @@ if st.session_state.page == "Player":
             st.session_state.level = 0
             st.session_state.hint_revealed = False
             st.rerun()
-# --- ADMIN PAGE ---
-# --- ADMIN PAGE ---
-    else:
-        if not st.session_state.admin_authenticated:
-            st.title("🔒 Admin Login")
-            pw = st.text_input("Enter Admin Password:", type="password")
-            if st.button("Unlock"):
-                if pw == "moravia2026":
-                    st.session_state.admin_authenticated = True
-                    st.rerun()
-                else:
-                    st.error("Wrong password")
-        else:
-            st.title("🛠 Admin Dashboard")
-            if st.button("Log Out"):
-                st.session_state.admin_authenticated = False
-                st.session_state.page = "Player"
-                st.rerun()
 
-            st.subheader("Add New Mission")
-            m_type = st.selectbox("Mission Type", ["Text Hint", "GPS Coordinates", "Image URL"])
-            
-            # --- DYNAMIC BOXES BASED ON SELECTION ---
-            if m_type == "GPS Coordinates":
-                loc_name = st.text_input("Location Name (e.g. Powers Library)")
-                lat = st.text_input("Latitude")
-                lon = st.text_input("Longitude")
-                dest = f"{loc_name}|{lat}|{lon}"
+# --- ADMIN PAGE ---
+else:
+    if not st.session_state.admin_authenticated:
+        st.title("🔒 Admin Login")
+        pw = st.text_input("Enter Admin Password:", type="password")
+        if st.button("Unlock"):
+            if pw == "moravia2026":
+                st.session_state.admin_authenticated = True
+                st.rerun()
             else:
-                dest = st.text_input("Destination (Name or URL)")
+                st.error("Wrong password")
+    else:
+        st.title("🛠 Admin Dashboard")
+        if st.button("Log Out"):
+            st.session_state.admin_authenticated = False
+            st.session_state.page = "Player"
+            st.rerun()
 
-            hint = st.text_input("Search Clue (Hint)")
-            sol = st.text_input("Completion Word (Answer)")
+        st.subheader("Add New Mission")
+        m_type = st.selectbox("Mission Type", ["Text Hint", "GPS Coordinates", "Image URL"])
+        
+        if m_type == "GPS Coordinates":
+            loc_name = st.text_input("Location Name (e.g. Powers Library)")
+            lat_val = st.text_input("Latitude")
+            lon_val = st.text_input("Longitude")
+            dest = f"{loc_name}|{lat_val}|{lon_val}"
+        else:
+            dest = st.text_input("Destination (Name or URL)")
 
-            if st.button("Add Mission"):
-                if dest and hint and sol:
-                    new_target = {"type": m_type, "destination": dest, "orientation": hint, "completion": sol}
-                    st.session_state.targets.append(new_target)
-                    st.success("Mission Added!")
-                else:
-                    st.error("Please fill in all boxes!")
-                
-            st.markdown("---")
-            st.subheader("Current Missions")
-            st.write(st.session_state.targets)
-            
-            if st.button("Clear All Missions"):
-                st.session_state.targets = []
-                st.rerun()
-                
-              
-              
-               
-                st.session_state.targets = []
-                st.rerun()
-                
+        hint = st.text_input("Search Clue (Hint)")
+        sol = st.text_input("Completion Word (Answer)")
 
+        if st.button("Add Mission"):
+            if dest and hint and sol:
+                new_target = {"type": m_type, "destination": dest, "orientation": hint, "completion": sol}
+                st.session_state.targets.append(new_target)
+                st.success("Mission Added!")
+            else:
+                st.error("Please fill in all boxes!")
+        
+        st.markdown("---")
+        st.subheader("Current Missions")
+        st.write(st.session_state.targets)
+        
+        if st.button("Clear All Missions"):
+            st.session_state.targets = []
+            st.rerun()
             
