@@ -6,7 +6,7 @@ st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
 # THE COLOR PALETTE
 bg_color = "#003366"  
-btn_color = "#003366" 
+btn_border = "#4da6ff" # Softer blue for borders
 
 # Custom CSS
 st.markdown(f"""
@@ -15,17 +15,17 @@ st.markdown(f"""
         background-color: {bg_color};
     }}
     
-    /* 1. All buttons match the background color */
+    /* 1. Standard Buttons: Background matches BG, subtle blue border */
     div.stButton > button {{
         background-color: {bg_color} !important;
         color: white !important;
         border-radius: 10px;
-        border: 1px solid #80bfff;
+        border: 1px solid {btn_border} !important;
         font-weight: bold;
         width: 100%;
     }}
 
-    /* 2. THE STEALTH PIRATE FIX */
+    /* 2. THE STEALTH PIRATE FIX (No border, no background) */
     [data-testid="column"]:nth-of-type(2) [data-testid="stButton"] button {{
         background-color: transparent !important;
         border: none !important;
@@ -33,8 +33,10 @@ st.markdown(f"""
         box-shadow: none !important;
     }}
     
+    /* Reveal the flag only on hover */
     [data-testid="column"]:nth-of-type(2) [data-testid="stButton"] button:hover {{
         color: white !important;
+        background-color: transparent !important;
     }}
 
     /* Text & Input styling */
@@ -57,8 +59,6 @@ if 'page' not in st.session_state:
     st.session_state.page = "Player"
 if 'admin_authenticated' not in st.session_state:
     st.session_state.admin_authenticated = False
-if 'hint_revealed' not in st.session_state:
-    st.session_state.hint_revealed = False
 
 # --- TOP NAVIGATION ---
 col1, col2, col3 = st.columns([1, 1, 1])
@@ -95,6 +95,9 @@ if st.session_state.page == "Player":
                 st.error("Try again!")
     else:
         st.header("🏆 Victory!")
+        if st.button("Restart"):
+            st.session_state.level = 0
+            st.rerun()
 
 # --- ADMIN PAGE ---
 else:
@@ -105,6 +108,8 @@ else:
             if pw == "moravia2026":
                 st.session_state.admin_authenticated = True
                 st.rerun()
+            else:
+                st.error("Wrong password")
     else:
         st.title("🛠 Admin Dashboard")
         if st.button("Log Out"):
@@ -127,10 +132,16 @@ else:
         sol = st.text_input("Completion Word (Answer)")
 
         if st.button("Add Mission"):
-            st.session_state.targets.append({"type": m_type, "destination": dest, "orientation": hint, "completion": sol})
-            st.success("Mission Added!")
-            st.rerun()
+            if dest and hint and sol:
+                st.session_state.targets.append({"type": m_type, "destination": dest, "orientation": hint, "completion": sol})
+                st.success("Mission Added!")
+                st.rerun()
+            else:
+                st.error("Fill in all boxes!")
         
+        st.markdown("---")
+        st.subheader("Current Missions")
+        st.write(st.session_state.targets)
         if st.button("Clear All Missions"):
             st.session_state.targets = []
             st.rerun()
