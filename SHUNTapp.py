@@ -12,7 +12,7 @@ st.markdown(f"""
     }}
     /* Standard Buttons are CYAN */
     div.stButton > button {{
-        background-color: #00FFFF !important;
+        background-color: #80bfff !important;
         color: black !important;
         border-radius: 10px;
         border: 2px solid #000000;
