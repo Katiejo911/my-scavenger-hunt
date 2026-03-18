@@ -1,83 +1,55 @@
 import streamlit as st
 
-# --- CONFIGURATION & THEME ---
 st.set_page_config(page_title="Scavenger Hunt", layout="centered")
 
-# THE COLOR PALETTE
-bg_color = "#003366"  
-btn_border = "#4da6ff" 
-
-# Custom CSS
+# --- STYLING ---
+bg = "#003366"
 st.markdown(f"""
-    <style>
-    .stApp {{
-        background-color: {bg_color};
-    }}
+<style>
+    .stApp {{ background-color: {bg}; }}
+    h1, h2, h3, p, span, label, .stMarkdown {{ color: white !important; }}
+    .stTextInput>div>div>input {{ background-color: white !important; color: black !important; }}
     
-    /* 1. Standard Buttons: Match BG with a subtle border */
+    /* Standard Buttons */
     div.stButton > button {{
-        background-color: {bg_color} !important;
+        background-color: {bg} !important;
         color: white !important;
+        border: 1px solid #4da6ff !important;
         border-radius: 10px;
-        border: 1px solid {btn_border} !important;
-        font-weight: bold;
         width: 100%;
     }}
-
-    /* 2. THE STEALTH PIRATE FIX (Targeting the flag) */
+    /* Ghost Pirate Flag (No Border) */
     button:has(div:contains("🏴‍☠️")) {{
         background-color: transparent !important;
         border: none !important;
-        color: {bg_color} !important;
+        color: {bg} !important;
         box-shadow: none !important;
-        outline: none !important;
     }}
-    
-    button:has(div:contains("🏴‍☠️")):hover {{
-        color: white !important;
-        background-color: transparent !important;
-    }}
+    button:has(div:contains("🏴‍☠️")):hover {{ color: white !important; }}
+</style>
+""", unsafe_allow_html=True)
 
-    /* Text & Input styling */
-    h1, h2, h3, p, span, label, .stMarkdown {{
-        color: white !important;
-    }}
-    .stTextInput>div>div>input {{
-        background-color: white !important;
-        color: black !important;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+# --- LOGIC ---
+if 'level' not in st.session_state: st.session_state.update({'level':0, 'targets':[], 'page':"Player", 'admin':False})
 
-# --- SESSION STATE ---
-if 'level' not in st.session_state:
-    st.session_state.level = 0
-if 'targets' not in st.session_state:
-    st.session_state.targets = []
-if 'page' not in st.session_state:
-    st.session_state.page = "Player"
-if 'admin_authenticated' not in st.session_state:
-    st.session_state.admin_authenticated = False
-
-# --- TOP NAVIGATION ---
-col1, col2, col3 = st.columns([1, 1, 1])
-with col2:
+# Header / Secret Switch
+c1, c2, c3 = st.columns([1,1,1])
+with c2:
     if st.button("🏴‍☠️"):
         st.session_state.page = "Admin" if st.session_state.page == "Player" else "Player"
         st.rerun()
 
-# --- PLAYER PAGE ---
+# --- PLAYER ---
 if st.session_state.page == "Player":
     st.title("Scavenger Hunt")
     if not st.session_state.targets:
-        st.info("No missions yet. Find the secret spot at the top to log in.")
+        st.info("No missions yet. Use the secret spot above.")
     elif st.session_state.level < len(st.session_state.targets):
         t = st.session_state.targets[st.session_state.level]
         st.subheader("📍 1. Find the Destination")
         if t['type'] == "GPS Coordinates":
-            parts = t['destination'].split('|')
-            loc_name, lat, lon = parts[0], parts[1], parts[2]
-            st.write(f"**Target:** {loc_name}")
+            loc, lat, lon = t['destination'].split('|')
+            st.write(f"**Target:** {loc}")
             map_url = f"https://maps.google.com/maps?q={lat},{lon}&hl=en&z=17&output=embed"
             st.markdown(f'<iframe width="100%" height="300" src="{map_url}"></iframe>', unsafe_allow_html=True)
         else:
@@ -90,57 +62,40 @@ if st.session_state.page == "Player":
                 st.balloons()
                 st.session_state.level += 1
                 st.rerun()
-            else:
-                st.error("Try again!")
+            else: st.error("Try again!")
     else:
         st.header("🏆 Victory!")
         if st.button("Restart"):
             st.session_state.level = 0
             st.rerun()
 
-# --- ADMIN PAGE ---
+# --- ADMIN ---
 else:
-    if not st.session_state.admin_authenticated:
+    if not st.session_state.admin:
         st.title("🔒 Admin Login")
-        pw = st.text_input("Enter Admin Password:", type="password")
-        if st.button("Unlock"):
-            if pw == "moravia2026":
-                st.session_state.admin_authenticated = True
+        if st.text_input("Password:", type="password") == "moravia2026":
+            if st.button("Unlock"):
+                st.session_state.admin = True
                 st.rerun()
-            else:
-                st.error("Wrong password")
     else:
         st.title("🛠 Admin Dashboard")
         if st.button("Log Out"):
-            st.session_state.admin_authenticated = False
+            st.session_state.admin = False
             st.session_state.page = "Player"
             st.rerun()
 
-        st.subheader("Add New Mission")
         m_type = st.selectbox("Mission Type", ["GPS Coordinates", "Text Hint"])
-        
         if m_type == "GPS Coordinates":
-            loc_name = st.text_input("Location Name")
-            lat_val = st.text_input("Latitude")
-            lon_val = st.text_input("Longitude")
-            dest = f"{loc_name}|{lat_val}|{lon_val}"
+            dest = f"{st.text_input('Name')}|{st.text_input('Lat')}|{st.text_input('Lon')}"
         else:
             dest = st.text_input("Destination")
 
-        hint = st.text_input("Search Clue (Hint)")
-        sol = st.text_input("Completion Word (Answer)")
-
-        if st.button("Add Mission"):
-            if dest and hint and sol:
-                st.session_state.targets.append({"type": m_type, "destination": dest, "orientation": hint, "completion": sol})
-                st.success("Mission Added!")
-                st.rerun()
-            else:
-                st.error("Fill in all boxes!")
+        hint, sol = st.text_input("Clue"), st.text_input("Answer")
+        if st.button("Add Mission") and dest and sol:
+            st.session_state.targets.append({"type":m_type, "destination":dest, "orientation":hint, "completion":sol})
+            st.rerun()
         
         st.markdown("---")
-        st.subheader("Current Missions")
-        st.write(st.session_state.targets)
-        if st.button("Clear All Missions"):
+        if st.button("Clear All"):
             st.session_state.targets = []
             st.rerun()
